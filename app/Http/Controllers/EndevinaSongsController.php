@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\EndevinaSongs;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class EndevinaSongsController extends Controller
 {
@@ -12,16 +13,26 @@ class EndevinaSongsController extends Controller
 
         $songs = EndevinaSongs::limit($request->howmany)->get();
 
-        //with('respostes')->
-        //->inRandomOrder()
+        $existe = 'no existe';
+        $contents = Storage::url('/public/hola.txt');
+        if (Storage::exists('/public/cosa.mp3')) {
+            $existe = 'si que existe cosa.mp3';
+        }
+       
+        if (Storage::exists('/public/hola.txt')) {
+            //$existe = 'hola.txt existe';
+        }
 
-        //$preguntes = PreguntasDonamElNumero::with('respostes')->where('id','27')->get();
+
+
+        Storage::disk('local')->put('example.txt', 'Contents');
 
         return [
             'status' => '1',
+            'cosa' => $existe,
+            'cosa2' => $contents,
             'count' => count($songs),
             'data' => $songs
         ];
     }
-
 }
