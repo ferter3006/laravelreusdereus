@@ -27,12 +27,15 @@ class EndevinaSongsController extends Controller
 
         Storage::disk('local')->put('example.txt', 'Contents');
 
+        $path_to_file = storage_path('app/public/cosa.mp3');
+
+        //return response()->download($path_to_file);
         return [
             'status' => '1',
             'cosa' => $existe,
             'cosa2' => $contents,
             'count' => count($songs),
-            'data' => $songs
+            'path_to_file' => $path_to_file
         ];
     }
 }

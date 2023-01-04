@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\IdsGeneradesUnaDeDues;
+use App\Models\Jocs;
 use App\Models\PreguntasUnaDeDues;
+use App\Models\ReglesDelJoc;
 use Illuminate\Http\Request;
 
 class PreguntasUnaDeDuesController extends Controller
@@ -14,11 +17,11 @@ class PreguntasUnaDeDuesController extends Controller
      */
     public function index(Request $request)
     {
-        $preguntes = PreguntasUnaDeDues::limit($request->howmany)->get();        
-        return [            
+        $preguntes = PreguntasUnaDeDues::limit($request->howmany)->get();
+        return [
             'status' => '1',
             'data' => $preguntes
-            
+
         ];
     }
 
@@ -61,6 +64,69 @@ class PreguntasUnaDeDuesController extends Controller
         return [
             'status' => '1',
             'data' => $pregunta
+        ];
+    }
+
+    public function shownext($id)
+    {
+        $preguntesFalten = IdsGeneradesUnaDeDues::where('jocs_id', $id)->where('falta_respondre', 1)->get();
+        $preguntesCompletades = IdsGeneradesUnaDeDues::where('jocs_id', $id)->where('falta_respondre', 0)->get();
+        $preguntaToca = IdsGeneradesUnaDeDues::where('jocs_id', $id)->where('falta_respondre', 1)->limit(1)->get();
+        $pregunta = PreguntasUnaDeDues::find($preguntaToca[0]->preguntas_una_de_dues_id);
+
+        $rand = rand(1, 11);
+        $resposta1 = [$pregunta->resposta1, true];
+        $resposta2 = [$pregunta->resposta2, false];
+        $resposta3 = [$pregunta->resposta3, false];
+        if ($rand > 6) { // fem un random per canviar de posicio les preguntes 1 i 2 
+            $resposta1 = [$pregunta->resposta2, false];
+            $resposta2 = [$pregunta->resposta1, true];
+        }
+
+        return [            
+            'status' => '1',
+            'infoExtra' => [
+                'prova' => 'preguntes una de dues',
+                'game_id' => $id,
+            ],
+            'preguntesFalten' => $preguntesFalten->count(),
+            'preguntesCompletades' => $preguntesCompletades->count(),
+            'tocaID' => $preguntaToca[0]->id,
+            'tocaPregunta' => $pregunta->pregunta,
+            'tocaResposta1' => $resposta1,
+            'tocaResposta2' => $resposta2,
+            'tocaResposta3' => $resposta3, // preguntas al ciber si es millor enviar exclusivament la 
+            // resposta i no tot l'array de informació (id, created at.. etc)
+            // lo que implicaría fer un collection array i tal
+            'tocaFont' => $pregunta->font
+        ];
+    }
+
+    public function clickresposta(Request $request)
+    {
+        $pregunta = IdsGeneradesUnaDeDues::find($request->pregunta_id);
+        $pregunta->falta_respondre = 0;
+        $pregunta->save();
+
+        $joc = Jocs::find($request->game_id);
+        $rule = ReglesDelJoc::where('rule', 'punts_guanya_prova_4')->get()[0]->value;
+
+        if ($request->winner === '1') {
+            $joc->team1points += $rule;
+        } else if ($request->winner === '2') {
+            $joc->team2points += $rule;
+        } else if ($request->winner === '3') {
+            $joc->team3points += $rule;
+        }
+
+        $joc->save();        
+
+        return [
+            'status' => '1',
+            'data' => $pregunta,
+            'team1points' => $joc->team1points,
+            'team2points' => $joc->team2points,
+            'team3points' => $joc->team3points,
         ];
     }
 

@@ -58,11 +58,13 @@ Route::delete('/preguntesquantessaps/{id}', [PreguntasQuantesSapsController::cla
 
 Route::get('/preguntesunadedues', [PreguntasUnaDeDuesController::class, 'index'])->middleware('can:jugar');
 Route::get('/preguntesunadedues/{id}', [PreguntasUnaDeDuesController::class, 'show'])->middleware('can:jugar');
+Route::get('/preguntesunadedues/game/{id}', [PreguntasUnaDeDuesController::class, 'shownext'])->middleware('can:jugar');
+Route::post('/preguntesunadedues/clickresposta', [PreguntasUnaDeDuesController::class, 'clickresposta'])->middleware('can:jugar');
+Route::post('/preguntesunadedues/completaprova/{id}', [PreguntasUnaDeDuesController::class, 'provacompletada'])->middleware('can:jugar');
 Route::post('/preguntesunadedues', [PreguntasUnaDeDuesController::class, 'store'])->middleware('can:crear');
 Route::put('/preguntesunadedues/{id}', [PreguntasUnaDeDuesController::class, 'update'])->middleware('can:crear');
 Route::delete('/preguntesunadedues/{id}', [PreguntasUnaDeDuesController::class, 'destroy'])->middleware('can:crear');
 
-Route::get('/endevinasongs', [EndevinaSongsController::class, 'index'])->middleware('can:jugar');
 
 
 Route::post('/crearjuego', [GameCreatorController::class, 'crearGame'])->middleware('can:jugar');
@@ -71,5 +73,8 @@ Route::get('/mostrasoloequipos/{id}', [GameCreatorController::class, 'mostrasolo
 
 
 }); // end sanctum group routes
+
+//Route::get('/endevinasongs', [EndevinaSongsController::class, 'index'])->middleware('can:jugar');
+Route::get('/endevinasongs', [EndevinaSongsController::class, 'index']);
 
 Route::get('/game/rules', [ReglesDelJocController::class, 'index']);
